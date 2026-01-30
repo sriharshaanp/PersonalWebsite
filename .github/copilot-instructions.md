@@ -27,6 +27,15 @@ This repo is a minimal single-page static portfolio (folder: `portfolio/`). The 
 - To change the branch or publish path, edit `.github/workflows/deploy.yml` accordingly.
 - Check Actions logs on the repository page to troubleshoot failed deploys.
 
+## Optional: Use a Personal Access Token for deployments 🔐
+If organization policies block the default `GITHUB_TOKEN` from pushing to `gh-pages`, you can create a **Personal Access Token (PAT)** and store it in the repository secrets to allow the workflow to push.
+
+1. Create a PAT with `repo` scope (or at least Pages/write access for the repository). For org-controlled repos, consider a fine-grained token with the needed repo permissions.
+2. Add this PAT in GitHub → **Settings → Secrets and variables → Actions → New repository secret** with the name `DEPLOY_TOKEN`.
+3. The workflow is already configured to prefer `DEPLOY_TOKEN` if present; no further changes are required.
+
+If you'd like, I can generate the exact step to add to the workflow or help prepare a small PR template with instructions to share with org admins.
+
 ## Project-specific conventions & small rules 📐
 - Single-file content model: prefer updating arrays in `js/app.js` for content changes rather than editing HTML markup directly.
 - Lightweight, no tooling: there is no bundler, test runner, or CI beyond the Pages deploy workflow—keep changes small and declarative.
