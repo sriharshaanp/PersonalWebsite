@@ -24,7 +24,8 @@ jobs:
           node-version: '18'
 
       - name: Install dependencies
-        run: npm ci
+        run: |
+          npm ci || npm install
         working-directory: ./portfolio
 
       - name: Build portfolio
