@@ -8,15 +8,17 @@ This is a minimal single-page portfolio scaffold. Sections:
 - Publications (citations link to papers)
 - Media articles
 
-Run locally (Python 3):
+Run locally (Vite + Node.js):
 
 ```bash
-python -m http.server 8000
+cd portfolio
+npm ci
+npm run dev
 ```
 
-Then open `http://localhost:8000` in your browser.
+Then open the dev URL printed by Vite (usually `http://localhost:5173`).
 
-You can customize content in `js/app.js`.
+You can customize content in `src/data.ts` and the React components under `src/components/`.
 
 Sample assets were added in `assets/`:
 

@@ -4,18 +4,16 @@
 This repo is a minimal single-page static portfolio (folder: `portfolio/`). The site is plain HTML/CSS/JS (no build step). These notes tell an AI agent how to be immediately productive making content edits, small UX fixes, and managing deployment.
 
 ## Quick start ✅
-- Run locally: `python -m http.server 8000` (also available via `npm start` script in `portfolio/package.json`).
-- Open: http://localhost:8000 (site root serves the `portfolio/` folder).
+- Install deps: `cd portfolio && npm ci`
+- Run locally: `cd portfolio && npm run dev` (Vite dev server). Open the URL shown by Vite (usually `http://localhost:5173`).
+- Build: `cd portfolio && npm run build` (outputs `portfolio/dist` for publishing).
 
 ## Where content lives (actionable edits) 🔧
-- Main content data arrays: `portfolio/js/app.js`
-  - `aboutText` — edit the About text.
-  - `memberships` — list of membership objects (e.g., `{title:'ACM Member', org:'ACM', certUrl:'assets/certs/cert-acm.svg'}`).
-  - `judging` — judging entries with `certImg` and sample `pics` arrays (images are client-only).
-  - `publications` and `media` — arrays of link objects.
-- Markup: `portfolio/index.html` — sections use IDs (`#about`, `#memberships`, `#judging`, `#publications`, `#media`) that the nav links target.
-- Static assets: `portfolio/assets/certs/` and `portfolio/assets/images/`.
-- Styling: `portfolio/css/styles.css` — small, global styles and modal CSS.
+- Main content data: `portfolio/src/data.ts` — edit `aboutText`, `memberships`, `judging`, `publications`, `media` arrays.
+- React components: `portfolio/src/components/` (`About`, `Memberships`, `Judging`, `Publications`, `Media`).
+- App entry: `portfolio/src/App.tsx` and `portfolio/src/main.tsx`.
+- Static assets: `portfolio/assets/certs/` and `portfolio/assets/images/` (referenced from `data.ts`).
+- Styling: `portfolio/src/styles.css` — global styles that mirror the original site.
 
 ## Runtime & UX patterns to respect ⚠️
 - No backend: file `input` uploads in the judging modal are stored client-side only via `FileReader` (no persistence). If you add server-side storage, you must add a new API and update the README and deployments.
