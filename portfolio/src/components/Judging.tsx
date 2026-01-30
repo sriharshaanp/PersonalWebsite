@@ -1,68 +1,108 @@
-import React, { useState } from 'react'
-import { JudgingEntry } from '../data'
+import { useMemo, useState } from "react";
+import Section from "./shared/Section";
+import TileGrid from "./shared/TileGrid";
+import { judging, Tile } from "../data";
+import { isSafeHref } from "./shared/utils";
 
-export default function Judging({ items }: { items: JudgingEntry[] }) {
-  const [modalOpen, setModalOpen] = useState(false)
-  const [modalBody, setModalBody] = useState<JSX.Element | null>(null)
+export default function Judging() {
+  const tiles = useMemo(() => judging, []);
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function openModalWith(entry: JudgingEntry) {
-    setModalBody(
-      <div>
-        <img className="cert-preview" src={entry.certImg} alt="Certificate" />
+  const openCert = async (item: Tile) => {
+    const url = item.proof;
+    if (!url) return;
 
-        {entry.pics && entry.pics.length > 0 && (
-          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginTop: 12 }}>
-            {entry.pics.map((p) => <img key={p} src={p} style={{ width: '100%', height: 'auto', border: '1px solid #ddd', borderRadius: 4 }} />)}
-          </div>
-        )}
+    if (!isSafeHref(url)) {
+      alert("Please use a local /assets/... path or an https:// link for proof.");
+      return;
+    }
 
-        <div style={{ marginTop: 12 }}>
-          <label style={{ display: 'block' }}>Upload pictures (they will only be stored locally in your browser):</label>
-          <input type="file" multiple accept="image/*" onChange={(ev) => handleFiles(ev.target.files)} />
-          <div id="gallery" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(120px, 1fr))', gap: 8, marginTop: 10 }} />
-        </div>
-      </div>
-    )
-    setModalOpen(true)
-  }
+    setBusy(true);
+    setError(null);
+    setPreviewTitle(item.title);
 
-  function handleFiles(files: FileList | null) {
-    if (!files) return
-    const gallery = document.getElementById('gallery')
-    if (!gallery) return
-    gallery.innerHTML = ''
-    Array.from(files).forEach((file) => {
-      const reader = new FileReader()
-      reader.onload = (e) => {
-        const img = document.createElement('img')
-        img.src = e.target?.result as string
-        img.style.width = '100%'
-        img.style.height = 'auto'
-        img.style.border = '1px solid #ddd'
-        img.style.borderRadius = '4px'
-        gallery.appendChild(img)
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to load proof: ${res.status} ${res.statusText}`);
+
+      const blob = await res.blob();
+
+      const maxBytes = 10 * 1024 * 1024;
+      if (blob.size > maxBytes) {
+        throw new Error("Proof file is too large to preview. Please open it directly.");
       }
-      reader.readAsDataURL(file)
-    })
-  }
+
+      const reader = new FileReader();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        reader.onerror = () => reject(new Error("FileReader failed"));
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(blob);
+      });
+
+      setPreviewDataUrl(dataUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      setPreviewDataUrl(null);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const close = () => {
+    setPreviewDataUrl(null);
+    setPreviewTitle("");
+    setError(null);
+  };
 
   return (
-    <>
-      <div id="judging-grid" className="grid">
-        {items.map((item) => (
-          <div className="card" key={item.id}>
-            <h3>{item.title} ({item.year})</h3>
-            <button className="btn" onClick={() => openModalWith(item)}>Open Details</button>
-          </div>
-        ))}
-      </div>
+    <Section
+      id="judging"
+      title="Judging"
+      subtitle="Click a tile to preview certificate (modal via FileReader)"
+    >
+      <TileGrid
+        items={tiles}
+        primaryActionLabel={busy ? "Loading…" : "View Certificate"}
+        onPrimaryAction={(it) => {
+          if (!busy) openCert(it);
+        }}
+      />
 
-      <div id="modal" className="modal" aria-hidden={modalOpen ? 'false' : 'true'} onClick={(e) => { if (e.target === e.currentTarget) setModalOpen(false) }}>
-        <div className="modal-content">
-          <button className="modal-close" onClick={() => setModalOpen(false)}>✕</button>
-          <div id="modal-body">{modalBody}</div>
+      {(previewDataUrl || error) && (
+        <div className="modal" role="dialog" aria-modal="true" onClick={close}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <div className="modal-title">{previewTitle}</div>
+                <div className="muted small">Certificate preview</div>
+              </div>
+              <button className="nav-btn" onClick={close} aria-label="Close modal">
+                Close
+              </button>
+            </div>
+
+            {error ? (
+              <div className="error">{error}</div>
+            ) : (
+              <img className="modal-img" src={previewDataUrl ?? ""} alt="Certificate preview" />
+            )}
+
+            {!error && (
+              <a
+                className="link"
+                href={tiles.find((t) => t.title === previewTitle)?.proof}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open original file
+              </a>
+            )}
+          </div>
         </div>
-      </div>
-    </>
-  )
+      )}
+    </Section>
+  );
 }

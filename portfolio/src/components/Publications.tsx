@@ -1,12 +1,15 @@
-import React from 'react'
-import { Publication } from '../data'
+import Section from "./shared/Section";
+import { publications } from "../data";
+import TileGrid from "./shared/TileGrid";
 
-export default function Publications({ items }: { items: Publication[] }) {
+export default function Publications() {
   return (
-    <ul id="publications-list">
-      {items.map((p) => (
-        <li key={p.title}><a href={p.url} target="_blank" rel="noopener">{p.citation}</a></li>
-      ))}
-    </ul>
-  )
+    <Section
+      id="publications"
+      title="Publications"
+      subtitle="Research manuscripts and published work"
+    >
+      <TileGrid items={publications} />
+    </Section>
+  );
 }

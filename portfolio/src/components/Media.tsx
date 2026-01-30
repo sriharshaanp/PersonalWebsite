@@ -1,12 +1,11 @@
-import React from 'react'
-import { MediaItem } from '../data'
+import Section from "./shared/Section";
+import { media } from "../data";
+import TileGrid from "./shared/TileGrid";
 
-export default function Media({ items }: { items: MediaItem[] }) {
+export default function Media() {
   return (
-    <ul id="media-list">
-      {items.map((m) => (
-        <li key={m.title}><a href={m.url} target="_blank" rel="noopener">{m.title} — {m.outlet}</a></li>
-      ))}
-    </ul>
-  )
+    <Section id="media" title="Media articles" subtitle="Published coverage about your work">
+      <TileGrid items={media} />
+    </Section>
+  );
 }

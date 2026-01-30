@@ -1,25 +1,69 @@
-export const aboutText = `I am an interdisciplinary researcher and media artist working on creative computation, interaction, and media practice. Edit this text in src/data.ts.`
+export type LinkItem = { label: string; href: string };
 
-export type Membership = { title: string; org: string; certUrl: string }
-export const memberships: Membership[] = [
-  { title: 'ACM Member', org: 'ACM', certUrl: 'assets/certs/cert-acm.svg' },
-  { title: 'IEEE Member', org: 'IEEE', certUrl: 'assets/certs/cert-ieee.svg' }
-]
+export type Tile = {
+  title: string;
+  subtitle?: string;
+  image: string; // logo/badge image
+  proof?: string; // certificate/proof file
+  links?: LinkItem[]; // extra links (PDF/DOI/portal/etc)
+};
 
-export type JudgingEntry = { id: string; title: string; year: number; certImg: string; pics?: string[] }
-export const judging: JudgingEntry[] = [
-  { id: 'j1', title: 'Conference X - Reviewer', year: 2023, certImg: 'assets/certs/cert-judging1.svg', pics: ['assets/images/sample-art1.svg'] },
-  { id: 'j2', title: 'Festival Y - Jury', year: 2024, certImg: 'assets/certs/cert-judging2.svg', pics: ['assets/images/sample-art2.svg'] }
-]
+export const about = {
+  name: "SriHarsha Anand Pushkala",
+  role: "Director of Fraud Strategy & Analytics",
+  summary:
+    "I lead applied AI and analytics initiatives focused on fraud detection, identity verification, and risk decisioning. I contribute through research manuscripts, peer review, and global judging activity. This page provides verifiable evidence for each credential."
+};
 
-export type Publication = { title: string; citation: string; url: string }
-export const publications: Publication[] = [
-  { title: 'Paper A', citation: 'Author, Title, Venue, 2021', url: 'https://doi.org/10.0000/example' },
-  { title: 'Paper B', citation: 'Author, Title, Venue, 2022', url: 'https://arxiv.org/' }
-]
+export const memberships: Tile[] = [
+  {
+    title: "BCS",
+    subtitle: "Fellow",
+    image: "/assets/images/sample-art1.svg",
+    proof: "/assets/certs/cert-acm.svg",
+    links: [{ label: "Certificate", href: "/assets/certs/cert-acm.svg" }]
+  },
+  {
+    title: "IEEE",
+    subtitle: "Senior Member",
+    image: "/assets/images/sample-art2.svg",
+    proof: "/assets/certs/cert-ieee.svg",
+    links: [{ label: "Certificate", href: "/assets/certs/cert-ieee.svg" }]
+  }
+];
 
-export type MediaItem = { title: string; outlet: string; url: string }
-export const media: MediaItem[] = [
-  { title: 'Interview on X', outlet: 'News X', url: 'https://example.com/article1' },
-  { title: 'Feature on Y', outlet: 'Magazine Y', url: 'https://example.com/article2' }
-]
+export const judging: Tile[] = [
+  {
+    title: "Hackathon Judge",
+    subtitle: "Devpost",
+    image: "/assets/images/sample-art1.svg",
+    proof: "/assets/certs/cert-judging1.svg"
+  },
+  {
+    title: "Conference Reviewer",
+    subtitle: "IEEE/ACM",
+    image: "/assets/images/sample-art2.svg",
+    proof: "/assets/certs/cert-judging2.svg"
+  }
+];
+
+export const publications: Tile[] = [
+  {
+    title: "Enhancing Data Diversity in Imbalanced Datasets…",
+    subtitle: "Manuscript · 2025",
+    image: "/assets/images/sample-art2.svg",
+    links: [
+      { label: "PDF", href: "https://example.com" },
+      { label: "ResearchGate", href: "https://example.com" }
+    ]
+  }
+];
+
+export const media: Tile[] = [
+  {
+    title: "Interview / feature on fraud analytics",
+    subtitle: "Trade publication · 2025",
+    image: "/assets/images/sample-art1.svg",
+    links: [{ label: "Read article", href: "https://example.com" }]
+  }
+];
