@@ -1,6 +1,5 @@
 import { useMemo, useState } from "react";
 import Section from "./shared/Section";
-import TileGrid from "./shared/TileGrid";
 import { judging, Tile } from "../data";
 import { isSafeHref } from "./shared/utils";
 
@@ -61,16 +60,95 @@ export default function Judging() {
     <Section
       id="judging"
       title="Judging"
-      subtitle="Click a tile to preview certificate (modal via FileReader)"
+      subtitle="Hover a tile for details. Preview opens certificate in a modal."
     >
-      <TileGrid
-        items={tiles}
-        primaryActionLabel={busy ? "Loading…" : "View Certificate"}
-        onPrimaryAction={(it) => {
-          if (!busy) openCert(it);
-        }}
-      />
+      <div className="grid">
+        {tiles.map((item) => {
+          const proof = item.proof;
 
+          return (
+            <div key={item.title} className="tile tile-hover">
+              {/* Header: always visible */}
+              <div className="tile-top">
+                <div className="tile-img">
+                  <img src={item.image} alt={item.title} />
+                </div>
+
+                <div className="tile-text">
+                  <div className="tile-title">{item.title}</div>
+                  {item.subtitle ? (
+                    <div className="tile-subtitle">{item.subtitle}</div>
+                  ) : null}
+                </div>
+              </div>
+
+              {/* Always visible link */}
+              {proof ? (
+                <a
+                  className="tile-link"
+                  href={proof}
+                  target="_blank"
+                  rel="noreferrer"
+                  onClick={(e) => {
+                    if (!isSafeHref(proof)) {
+                      e.preventDefault();
+                      alert("Please use a local /assets/... path or an https:// link for proof.");
+                    }
+                  }}
+                >
+                  View certificate
+                </a>
+              ) : (
+                <span className="muted small">No certificate link added</span>
+              )}
+
+              {/* Hover-only content */}
+              <div className="tile-hover-content">
+                {item.description ? (
+                  <p className="tile-desc">{item.description}</p>
+                ) : (
+                  <p className="tile-desc">
+                    Add a short description in <code>data.ts</code> for this judging activity.
+                  </p>
+                )}
+
+                <div className="tile-actions">
+                  {proof ? (
+                    <>
+                      <button
+                        className="btn"
+                        disabled={busy}
+                        onClick={() => {
+                          if (!busy) openCert(item);
+                        }}
+                      >
+                        {busy && previewTitle === item.title ? "Loading…" : "Preview Certificate"}
+                      </button>
+
+                      <a
+                        className="link"
+                        href={proof}
+                        target="_blank"
+                        rel="noreferrer"
+                        onClick={(e) => {
+                          if (!isSafeHref(proof)) {
+                            e.preventDefault();
+                            alert("Please use a local /assets/... path or an https:// link for proof.");
+                          }
+                        }}
+                      >
+                        Open original file
+                      </a>
+                    </>
+                  ) : null}
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal */}
       {(previewDataUrl || error) && (
         <div className="modal" role="dialog" aria-modal="true" onClick={close}>
           <div className="modal-card" onClick={(e) => e.stopPropagation()}>

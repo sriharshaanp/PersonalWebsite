@@ -1,15 +1,155 @@
+import { useMemo, useState } from "react";
 import Section from "./shared/Section";
-import { memberships } from "../data";
-import TileGrid from "./shared/TileGrid";
+import { memberships, Tile } from "../data";
+import { isSafeHref } from "./shared/utils";
 
 export default function Memberships() {
+  const tiles = useMemo(() => memberships, []);
+  const [previewDataUrl, setPreviewDataUrl] = useState<string | null>(null);
+  const [previewTitle, setPreviewTitle] = useState<string>("");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const openCert = async (item: Tile) => {
+    const url = item.proof;
+    if (!url) return;
+
+    if (!isSafeHref(url)) {
+      alert("Please use a local /assets/... path or an https:// link for proof.");
+      return;
+    }
+
+    setBusy(true);
+    setError(null);
+    setPreviewTitle(item.title);
+
+    try {
+      const res = await fetch(url);
+      if (!res.ok) throw new Error(`Failed to load proof: ${res.status} ${res.statusText}`);
+
+      const blob = await res.blob();
+
+      const maxBytes = 10 * 1024 * 1024;
+      if (blob.size > maxBytes) {
+        throw new Error("Proof file is too large to preview. Please open it directly.");
+      }
+
+      const reader = new FileReader();
+      const dataUrl: string = await new Promise((resolve, reject) => {
+        reader.onerror = () => reject(new Error("FileReader failed"));
+        reader.onload = () => resolve(String(reader.result));
+        reader.readAsDataURL(blob);
+      });
+
+      setPreviewDataUrl(dataUrl);
+    } catch (e) {
+      setError(e instanceof Error ? e.message : "Unknown error");
+      setPreviewDataUrl(null);
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const close = () => {
+    setPreviewDataUrl(null);
+    setPreviewTitle("");
+    setError(null);
+  };
+
   return (
     <Section
       id="memberships"
       title="Memberships"
-      subtitle="Tiles with badges/logos + certificate links"
+      subtitle="Hover for details. Click View Certificate to preview proof."
     >
-      <TileGrid items={memberships} />
+      <div className="grid">
+        {tiles.map((item, idx) => {
+          const proof = item.proof;
+
+          return (
+            <div key={`${item.title}-${idx}`} className="tile tile-hover">
+              {/* Always visible */}
+              <div className="tile-top">
+                <div className="tile-img">
+                  <img src={item.image} alt={item.title} />
+                </div>
+
+                <div className="tile-text">
+                  <div className="tile-title">{item.title}</div>
+                  {item.subtitle ? <div className="tile-subtitle">{item.subtitle}</div> : null}
+                </div>
+              </div>
+
+              {/* Always visible primary action (NO CUT-OFF) */}
+              {proof ? (
+                <button
+                  className="btn"
+                  disabled={busy && previewTitle === item.title}
+                  onClick={() => {
+                    if (!busy) openCert(item);
+                  }}
+                >
+                  {busy && previewTitle === item.title ? "Loading…" : "View Certificate"}
+                </button>
+              ) : (
+                <span className="muted small">No certificate added</span>
+              )}
+
+              {/* Hover-only info */}
+              <div className="tile-hover-content">
+                {item.description ? <p className="tile-desc">{item.description}</p> : null}
+
+                {item.selectivity ? (
+                  <p className="tile-desc">
+                    <strong>Why selective:</strong> {item.selectivity}
+                  </p>
+                ) : null}
+
+                {/* Optional: keep a simple link too (not necessary) */}
+                {proof ? (
+                  <a className="link" href={proof} target="_blank" rel="noreferrer">
+                    Open original file
+                  </a>
+                ) : null}
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Modal (same as Judging) */}
+      {(previewDataUrl || error) && (
+        <div className="modal" role="dialog" aria-modal="true" onClick={close}>
+          <div className="modal-card" onClick={(e) => e.stopPropagation()}>
+            <div className="modal-head">
+              <div>
+                <div className="modal-title">{previewTitle}</div>
+                <div className="muted small">Certificate preview</div>
+              </div>
+              <button className="nav-btn" onClick={close} aria-label="Close modal">
+                Close
+              </button>
+            </div>
+
+            {error ? (
+              <div className="error">{error}</div>
+            ) : (
+              <img className="modal-img" src={previewDataUrl ?? ""} alt="Certificate preview" />
+            )}
+
+            {!error && (
+              <a
+                className="link"
+                href={tiles.find((t) => t.title === previewTitle)?.proof}
+                target="_blank"
+                rel="noreferrer"
+              >
+                Open original file
+              </a>
+            )}
+          </div>
+        </div>
+      )}
     </Section>
   );
 }

@@ -1,22 +1,43 @@
+import { useEffect, useState } from "react";
 import About from "./components/About";
 import Memberships from "./components/Memberships";
 import Judging from "./components/Judging";
 import Publications from "./components/Publications";
 import Media from "./components/Media";
+import Education from "./components/Education";
+import Experience from "./components/Experience";
 
 export default function App() {
+  const [isDark, setIsDark] = useState(() => {
+    return localStorage.getItem("theme") === "dark";
+  });
+
+  useEffect(() => {
+    if (isDark) {
+      document.documentElement.classList.add("dark");
+      localStorage.setItem("theme", "dark");
+    } else {
+      document.documentElement.classList.remove("dark");
+      localStorage.setItem("theme", "light");
+    }
+  }, [isDark]);
+
   return (
     <div className="page">
-      <HeaderNav />
+      <HeaderNav isDark={isDark} setIsDark={setIsDark} />
 
-      <main className="container">
+      <main className="main">
         <Hero />
         <About />
+        <Education />
+        <Experience />
         <Memberships />
         <Judging />
         <Publications />
         <Media />
       </main>
+
+
 
       <footer className="footer">
         © {new Date().getFullYear()} SriHarsha Anand Pushkala
@@ -25,7 +46,7 @@ export default function App() {
   );
 }
 
-function HeaderNav() {
+function HeaderNav({ isDark, setIsDark }: { isDark: boolean; setIsDark: (isDark: boolean) => void }) {
   const items = [
     { id: "about", label: "About" },
     { id: "memberships", label: "Memberships" },
@@ -43,8 +64,8 @@ function HeaderNav() {
     <header className="nav">
       <div className="nav-inner">
         <div>
-          <div className="brand">Public Evidence Portfolio</div>
-          <div className="muted small">Single page · proof links included</div>
+          <div className="brand">Sriharsha Anand Pushkala</div>
+          <div className="muted small">Fraud Analytics | AI Evangelist</div>
         </div>
 
         <nav className="nav-links" aria-label="Primary">
@@ -57,6 +78,13 @@ function HeaderNav() {
               {it.label}
             </button>
           ))}
+          <button
+            className="theme-toggle"
+            onClick={() => setIsDark(!isDark)}
+            aria-label="Toggle dark mode"
+          >
+            {isDark ? "☀️" : "🌙"}
+          </button>
         </nav>
       </div>
     </header>
@@ -66,12 +94,8 @@ function HeaderNav() {
 function Hero() {
   return (
     <div className="hero">
-      <h1>Public Evidence Portfolio</h1>
-      <p className="muted">
-        One public link to validate memberships, judging activity, publications,
-        and media coverage. Each item includes proof links (certificate, PDF,
-        verification URL).
-      </p>
+      <h1>SriHarsha Anand Pushkala</h1>
+      <p className="muted">Director of Fraud Strategy & Analytics specializing in applied AI, fraud detection, and risk decisioning.</p>
     </div>
   );
 }
